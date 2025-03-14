@@ -1,3 +1,4 @@
+// models/UserManagementModel.js
 import { pool } from '../config/db.js';
 
 class UserManagementModel {

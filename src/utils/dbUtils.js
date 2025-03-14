@@ -1,32 +1,10 @@
-// utils/dbUtils.js
 import { pool } from '../config/db.js';
 
-const userTableQuery = `CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    mobile VARCHAR(15),
-    password VARCHAR(255) NOT NULL,
-    userType ENUM('user','admin') DEFAULT 'user',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);`;
-
-const postTableQuery = `CREATE TABLE IF NOT EXISTS posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);`;
-
-const feedbackTableQuery = `CREATE TABLE IF NOT EXISTS feedbacks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    comment TEXT NOT NULL,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+const usermanagementTableQuery = `CREATE TABLE IF NOT EXISTS \`user-management\` (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  userType ENUM('user','admin') DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`;
 
 const createTable = async (tableName, query) => {
@@ -40,9 +18,7 @@ const createTable = async (tableName, query) => {
 
 const createAllTable = async () => {
   try {
-    await createTable("Users", userTableQuery);
-    await createTable("Posts", postTableQuery);
-    await createTable("Feedbacks", feedbackTableQuery);
+    await createTable("user-management", usermanagementTableQuery);
     console.log("All tables created successfully!!");
   } catch (error) {
     console.log("Error creating tables", error);
@@ -50,4 +26,4 @@ const createAllTable = async () => {
   }
 };
 
-export default createAllTable; // Export par défaut
+export default createAllTable;
