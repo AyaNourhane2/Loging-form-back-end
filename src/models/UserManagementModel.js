@@ -1,4 +1,3 @@
-// models/UserManagementModel.js
 import { pool } from '../config/db.js';
 
 class UserManagementModel {
@@ -12,7 +11,7 @@ class UserManagementModel {
       'INSERT INTO `user-management` (name, userType) VALUES (?, ?)',
       [name, userType]
     );
-    return result;
+    return { id: result.insertId, name, userType }; // Retourne l'utilisateur ajouté
   }
 
   static async updateUser(id, name, userType) {
@@ -20,7 +19,7 @@ class UserManagementModel {
       'UPDATE `user-management` SET name = ?, userType = ? WHERE id = ?',
       [name, userType, id]
     );
-    return result;
+    return { id, name, userType }; // Retourne l'utilisateur mis à jour
   }
 
   static async deleteUser(id) {

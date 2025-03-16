@@ -3,7 +3,6 @@ import { createReservation, getReservationByNumberAndName } from '../models/Rese
 
 const router = express.Router();
 
-// Route pour créer une réservation
 router.post('/create', async (req, res) => {
   try {
     const reservationId = await createReservation(req.body);
@@ -13,10 +12,8 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// Route pour authentifier une réservation
 router.post('/authenticate', async (req, res) => {
   const { reservationNumber, guestName } = req.body;
-
   try {
     const reservation = await getReservationByNumberAndName(reservationNumber, guestName);
     if (reservation) {
