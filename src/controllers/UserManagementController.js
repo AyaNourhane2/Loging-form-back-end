@@ -11,23 +11,23 @@ class UserManagementController {
   }
 
   static async addUser(req, res) {
-    const { name, userType } = req.body;
+    const { username, email, role } = req.body;
     try {
-      const newUser = await UserManagementService.addUser(name, userType);
+      const newUser = await UserManagementService.addUser(username, email, role);
       res.status(201).json(newUser);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
   }
 
   static async updateUser(req, res) {
     const { id } = req.params;
-    const { name, userType } = req.body;
+    const { username, email, role } = req.body;
     try {
-      const updatedUser = await UserManagementService.updateUser(id, name, userType);
+      const updatedUser = await UserManagementService.updateUser(id, username, email, role);
       res.status(200).json(updatedUser);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
   }
 
@@ -35,7 +35,7 @@ class UserManagementController {
     const { id } = req.params;
     try {
       await UserManagementService.deleteUser(id);
-      res.status(200).json({ message: 'User deleted successfully' });
+      res.status(200).json({ id });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

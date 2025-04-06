@@ -5,12 +5,18 @@ class UserManagementService {
     return await UserManagementModel.getAllUsers();
   }
 
-  static async addUser(name, userType) {
-    return await UserManagementModel.addUser(name, userType);
+  static async addUser(username, email, role) {
+    if (!username || !role) {
+      throw new Error('Username and role are required');
+    }
+    return await UserManagementModel.addUser(username, email, role);
   }
 
-  static async updateUser(id, name, userType) {
-    return await UserManagementModel.updateUser(id, name, userType);
+  static async updateUser(id, username, email, role) {
+    if (!username || !role) {
+      throw new Error('Username and role are required');
+    }
+    return await UserManagementModel.updateUser(id, username, email, role);
   }
 
   static async deleteUser(id) {

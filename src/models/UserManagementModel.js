@@ -2,29 +2,36 @@ import { pool } from '../config/db.js';
 
 class UserManagementModel {
   static async getAllUsers() {
-    const [rows] = await pool.query('SELECT * FROM `user-management`');
+    const [rows] = await pool.query(`
+      SELECT 
+        id, 
+        username, 
+        email,
+        user_type as role 
+      FROM user_management
+    `);
     return rows;
   }
 
-  static async addUser(name, userType) {
+  static async addUser(username, email, role) {
     const [result] = await pool.query(
-      'INSERT INTO `user-management` (name, userType) VALUES (?, ?)',
-      [name, userType]
+      'INSERT INTO user_management (username, email, user_type) VALUES (?, ?, ?)',
+      [username, email, role]
     );
-    return { id: result.insertId, name, userType }; // Retourne l'utilisateur ajouté
+    return { id: result.insertId, username, email, role };
   }
 
-  static async updateUser(id, name, userType) {
-    const [result] = await pool.query(
-      'UPDATE `user-management` SET name = ?, userType = ? WHERE id = ?',
-      [name, userType, id]
+  static async updateUser(id, username, email, role) {
+    await pool.query(
+      'UPDATE user_management SET username = ?, email = ?, user_type = ? WHERE id = ?',
+      [username, email, role, id]
     );
-    return { id, name, userType }; // Retourne l'utilisateur mis à jour
+    return { id, username, email, role };
   }
 
   static async deleteUser(id) {
-    const [result] = await pool.query('DELETE FROM `user-management` WHERE id = ?', [id]);
-    return result;
+    await pool.query('DELETE FROM user_management WHERE id = ?', [id]);
+    return { id };
   }
 }
 
