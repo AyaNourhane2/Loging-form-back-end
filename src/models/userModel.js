@@ -1,31 +1,14 @@
 import { pool } from '../config/db.js';
 
-class UserManagementModel {
-  static async getAllUsers() {
-    const [rows] = await pool.query('SELECT * FROM `user-management`');
-    return rows;
-  }
-
-  static async addUser(name, userType) {
-    const [result] = await pool.query(
-      'INSERT INTO `user-management` (name, userType) VALUES (?, ?)',
-      [name, userType]
-    );
-    return result;
-  }
-
-  static async updateUser(id, name, userType) {
-    const [result] = await pool.query(
-      'UPDATE `user-management` SET name = ?, userType = ? WHERE id = ?',
-      [name, userType, id]
-    );
-    return result;
-  }
-
-  static async deleteUser(id) {
-    const [result] = await pool.query('DELETE FROM `user-management` WHERE id = ?', [id]);
-    return result;
-  }
+export async function findUserByEmail(email) {
+  const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+  return rows[0];
 }
 
-export default UserManagementModel;
+export async function createUser({ username, email, password, mobile, role }) {
+  const [result] = await pool.query(
+    `INSERT INTO users (username, email, password, mobile, userType) VALUES (?, ?, ?, ?, ?)`,
+    [username, email, password, mobile, role]
+  );
+  return result.insertId;
+}

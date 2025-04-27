@@ -1,86 +1,36 @@
-// services/userService.js
-import { pool } from "../config/db.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { findUserByEmail, createUser } from '../models/userModel.js';
 
-const JWT_SECRET = '76348734687346874363443434343443333333333'; // Ensure this is set in your .env file
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
-// Register User
-export const registerUser = async (user) => {
-    try {
-        const [existingUser] = await pool.query('SELECT * FROM users WHERE email = ?', [user.email]);
-        if (existingUser.length > 0) {
-            return { success: false, message: 'User already exists' };
-        }
-        
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        const query = `INSERT INTO users (name, email, mobile, password, userType) VALUES (?, ?, ?, ?,?)`;
-        const values = [user.username, user.email, user.mobile, hashedPassword,user.userType];
-        await pool.query(query, values);
-        return { success: true, message: 'User registered successfully' };
-    } catch (error) {
-        console.error("Registration error:", error);
-        return { success: false, message: 'Registration failed. Please try again later.' };
-    }
-};
+export async function registerUser({ username, email, mobile, password, role }) {
+  const existingUser = await findUserByEmail(email);
+  if (existingUser) {
+    throw new Error("Email déjà utilisé");
+  }
 
-// Login User with JWT token
-export const loginUser = async (email, password) => {
-    try {
-        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (rows.length === 0) {
-            return { success: false, message: 'User not found' };
-        }
-        
-        const user = rows[0];
-        const passwordMatch = await bcrypt.compare(password, user.password);
-        
-        if (!passwordMatch) {
-            return { success: false, message: 'Incorrect password' };
-        }
-        
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: user.id, email: user.email, userType:user.userType },
-            JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const userId = await createUser({ username, email, password: hashedPassword, mobile, role });
+  return { userId };
+}
 
-        console.log("Generated token:", token); // For debugging
-        
-        return { 
-            success: true, 
-            message: 'Login successful', 
-            token, 
-            user: { id: user.id, email: user.email, userType:user.userType } 
-        };
-    } catch (error) {
-        console.error("Login error:", error);
-        return { success: false, message: 'Login failed. Please try again later.' };
-    }
-};
+export async function loginUser({ email, password, role }) {
+  const user = await findUserByEmail(email);
+  if (!user) {
+    throw new Error("Email ou mot de passe invalide");
+  }
 
-// Get User Details from Token
-export const getUserFromToken = async (token) => {
-    try {
-        const trimmedToken = token.trim();
-        console.log("Received token:", trimmedToken);
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Email ou mot de passe invalide");
+  }
 
-        // Verify token (no `await` needed here)
-        const decoded = jwt.verify(trimmedToken, JWT_SECRET);
-        console.log("Decoded token:", decoded);
+  if (user.userType !== role) {
+    throw new Error("Rôle incorrect");
+  }
 
-        // Retrieve user details from the database
-        const [rows] = await pool.query('SELECT id, name, email, mobile, userType FROM users WHERE id = ?', [decoded.id]);
+  const token = jwt.sign({ id: user.id, role: user.userType }, JWT_SECRET, { expiresIn: '2h' });
 
-        if (rows.length === 0) {
-            return { success: false, message: 'User not found' };
-        }
-
-        const user = rows[0];
-        return { success: true, user };
-    } catch (error) {
-        console.error("Token verification error:", error);
-        return { success: false, message: 'Invalid or expired token' };
-    }
-};
+  return { token };
+}
